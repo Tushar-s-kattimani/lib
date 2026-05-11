@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { auth } from '../firebase/config';
-import { LogOut, BookOpen, Bell, Search, User, Home, BookMarked, Send } from 'lucide-react';
+import { LogOut, BookOpen, Bell, Search, User, Home, BookMarked, Send, X, Menu } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
