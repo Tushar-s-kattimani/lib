@@ -1,29 +1,37 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Mail, Calendar, Hash, ShieldCheck, Save } from 'lucide-react';
+import { User, Mail, Calendar, Hash, ShieldCheck, Save, Phone, MapPin } from 'lucide-react';
 import { Layout } from '../components/Layout';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import toast from 'react-hot-toast';
 
 export const StudentProfile: React.FC = () => {
   const { user, userData } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [semester, setSemester] = useState(userData?.semester || '');
   const [loading, setLoading] = useState(false);
+  const [editData, setEditData] = useState({
+    name: userData?.name || '',
+    phone: userData?.phone || '',
+    address: userData?.address || '',
+    semester: userData?.semester || ''
+  });
 
-  const handleUpdateSemester = async () => {
+  const handleUpdateProfile = async () => {
     if (!user) return;
     setLoading(true);
     try {
       await updateDoc(doc(db, 'students', user.uid), {
-        semester: semester
+        name: editData.name,
+        phone: editData.phone,
+        address: editData.address,
+        semester: editData.semester,
+        updatedAt: serverTimestamp()
       });
-      toast.success("Semester updated successfully!");
+      toast.success("Profile updated successfully!");
       setIsEditing(false);
-      // Note: AuthContext will pick up the change on next reload or we can rely on local state
     } catch (error: any) {
-      toast.error("Failed to update semester: " + error.message);
+      toast.error("Failed to update profile: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -62,21 +70,26 @@ export const StudentProfile: React.FC = () => {
                 <button 
                   onClick={() => {
                     setIsEditing(true);
-                    setSemester(userData?.semester || '');
+                    setEditData({
+                      name: userData?.name || '',
+                      phone: userData?.phone || '',
+                      address: userData?.address || '',
+                      semester: userData?.semester || ''
+                    });
                   }}
-                  className="text-primary text-sm font-bold hover:underline"
+                  className="bg-primary/10 text-primary px-4 py-2 rounded-xl text-xs font-bold hover:bg-primary hover:text-white transition-all"
                 >
-                  Edit Semester
+                  Edit Profile
                 </button>
               ) : (
                 <div className="flex gap-3">
-                  <button onClick={() => setIsEditing(false)} className="text-muted-foreground text-sm font-bold">Cancel</button>
+                  <button onClick={() => setIsEditing(false)} className="text-muted-foreground text-xs font-bold hover:text-foreground">Cancel</button>
                   <button 
-                    onClick={handleUpdateSemester} 
+                    onClick={handleUpdateProfile} 
                     disabled={loading}
-                    className="text-primary text-sm font-bold flex items-center gap-1"
+                    className="bg-primary text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1 hover:bg-primary/90 transition-all shadow-md shadow-primary/20"
                   >
-                    {loading ? 'Saving...' : <><Save className="w-4 h-4" /> Save</>}
+                    {loading ? 'Saving...' : <><Save className="w-4 h-4" /> Save Changes</>}
                   </button>
                 </div>
               )}
@@ -85,10 +98,22 @@ export const StudentProfile: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="text-sm text-muted-foreground font-medium mb-2 block">Full Name</label>
-                  <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border opacity-70">
-                    <User className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-foreground">{userData?.name}</span>
-                  </div>
+                  {isEditing ? (
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <input 
+                        type="text" 
+                        value={editData.name}
+                        onChange={(e) => setEditData({...editData, name: e.target.value})}
+                        className="w-full pl-10 pr-4 py-3 bg-background border border-primary/50 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border">
+                      <User className="w-5 h-5 text-muted-foreground" />
+                      <span className="text-foreground">{userData?.name}</span>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="text-sm text-muted-foreground font-medium mb-2 block">Student ID</label>
@@ -100,26 +125,66 @@ export const StudentProfile: React.FC = () => {
                 <div>
                   <label className="text-sm text-muted-foreground font-medium mb-2 block">Current Semester</label>
                   {isEditing ? (
-                    <select 
-                      value={semester}
-                      onChange={(e) => setSemester(e.target.value)}
-                      className="w-full p-3 bg-background border border-primary rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-all"
-                    >
-                      <option value="">Select Semester</option>
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => {
-                        const suffix = sem === 1 ? 'st' : sem === 2 ? 'nd' : sem === 3 ? 'rd' : 'th';
-                        const val = `${sem}${suffix} Sem`;
-                        return (
-                          <option key={sem} value={val}>
-                            {sem}{suffix} Semester
-                          </option>
-                        );
-                      })}
-                    </select>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <select 
+                        value={editData.semester}
+                        onChange={(e) => setEditData({...editData, semester: e.target.value})}
+                        className="w-full pl-10 pr-4 py-3 bg-background border border-primary/50 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
+                      >
+                        <option value="">Select Semester</option>
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => {
+                          const suffix = sem === 1 ? 'st' : sem === 2 ? 'nd' : sem === 3 ? 'rd' : 'th';
+                          const val = `${sem}${suffix} Sem`;
+                          return (
+                            <option key={sem} value={val}>
+                              {sem}{suffix} Semester
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
                   ) : (
                     <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border">
                       <Calendar className="w-5 h-5 text-muted-foreground" />
                       <span className="text-foreground">{userData?.semester || 'Not Specified'}</span>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground font-medium mb-2 block">Phone Number</label>
+                  {isEditing ? (
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <input 
+                        type="tel" 
+                        value={editData.phone}
+                        onChange={(e) => setEditData({...editData, phone: e.target.value})}
+                        className="w-full pl-10 pr-4 py-3 bg-background border border-primary/50 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-xl border border-border">
+                      <Phone className="w-5 h-5 text-muted-foreground" />
+                      <span className="text-foreground">{userData?.phone || 'Not Provided'}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm text-muted-foreground font-medium mb-2 block">Residential Address</label>
+                  {isEditing ? (
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-9 w-5 h-5 text-muted-foreground" />
+                      <textarea 
+                        value={editData.address}
+                        onChange={(e) => setEditData({...editData, address: e.target.value})}
+                        className="w-full pl-10 pr-4 py-3 bg-background border border-primary/50 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none h-24"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-start gap-3 p-3 bg-secondary/50 rounded-xl border border-border">
+                      <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
+                      <span className="text-foreground">{userData?.address || 'Not Provided'}</span>
                     </div>
                   )}
                 </div>
