@@ -25,18 +25,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check local storage for admin bypass
-    const bypassAdmin = localStorage.getItem('adminBypass');
-    if (bypassAdmin === 'true') {
-      setUser({ uid: 'admin-bypass', email: 'admin@system.local', emailVerified: true } as User);
-      setUserData({ role: 'admin', name: 'System Administrator' });
-      setLoading(false);
-      return;
-    }
-
     let unsubscribeSnapshot: (() => void) | null = null;
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      // Check for admin bypass first
+      const bypassAdmin = localStorage.getItem('adminBypass');
+      if (bypassAdmin === 'true') {
+        setUser({ uid: 'admin-bypass', email: 'admin@system.local', emailVerified: true } as User);
+        setUserData({ role: 'admin', name: 'System Administrator' });
+        setLoading(false);
+        return;
+      }
+
       setUser(firebaseUser);
       
       if (unsubscribeSnapshot) {
@@ -45,18 +45,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (firebaseUser) {
-        // Try admin first
+        // First check: Is this the specific hardcoded admin email?
+        if (firebaseUser.email === 'klelibrary@admin.com') {
+          setUserData({ role: 'admin', name: 'KLE Library Admin' });
+          setLoading(false);
+          return;
+        }
+
+        // Second check: Real Admin Docs (if any exist)
         const adminRef = doc(db, 'admins', firebaseUser.uid);
         const adminDoc = await getDoc(adminRef);
         
         if (adminDoc.exists()) {
-          // It's an admin
           unsubscribeSnapshot = onSnapshot(adminRef, (doc) => {
             if (doc.exists()) setUserData(doc.data());
           });
           setLoading(false);
         } else {
-          // It's likely a student
+          // Student logic - Fast path
           const studentRef = doc(db, 'students', firebaseUser.uid);
           unsubscribeSnapshot = onSnapshot(studentRef, (doc) => {
             if (doc.exists()) {
@@ -79,7 +85,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const loginAsAdmin = () => {
+  const loginAsAdmin = async () => {
+    // Clear any existing firebase session first to avoid conflicts
+    await auth.signOut();
     localStorage.setItem('adminBypass', 'true');
     setUser({ uid: 'admin-bypass', email: 'admin@system.local', emailVerified: true } as User);
     setUserData({ role: 'admin', name: 'System Administrator' });

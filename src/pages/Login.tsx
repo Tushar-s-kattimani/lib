@@ -13,7 +13,17 @@ export const Login: React.FC = () => {
   const [role, setRole] = useState<'student' | 'admin'>('student');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { loginAsAdmin } = useAuth();
+  const { user, userData, loading: authLoading, loginAsAdmin } = useAuth();
+
+  React.useEffect(() => {
+    if (!authLoading && user && userData) {
+      if (userData.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/student');
+      }
+    }
+  }, [user, userData, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +37,10 @@ export const Login: React.FC = () => {
         toast.error('Invalid Admin Credentials. Please use the authorized admin email and password.');
       }
       return;
+    }
+
+    if (role === 'student') {
+      localStorage.removeItem('adminBypass');
     }
 
     setLoading(true);

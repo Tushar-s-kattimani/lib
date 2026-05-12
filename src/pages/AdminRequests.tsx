@@ -71,17 +71,11 @@ export const AdminRequests: React.FC = () => {
   };
 
   const filteredRequests = requests.filter(req => {
-    const isVerified = req.isVerified !== false;
-    const hasSemester = req.studentSemester && 
-                        req.studentSemester !== 'N/A' && 
-                        req.studentSemester !== 'Not Specified' &&
-                        req.studentSemester !== 'Manual Entry (No Sem)';
-
     const matchesSemFilter = selectedSem === 'All' || 
                             req.studentSemester === selectedSem ||
                             (selectedSem !== 'All' && req.studentSemester?.startsWith(selectedSem.charAt(0)));
 
-    return isVerified && hasSemester && matchesSemFilter;
+    return matchesSemFilter;
   });
 
   return (
@@ -133,7 +127,12 @@ export const AdminRequests: React.FC = () => {
                           {request.studentName?.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-semibold text-foreground">{request.studentName}</p>
+                          <p className="font-semibold text-foreground flex items-center gap-2">
+                            {request.studentName}
+                            {!request.isVerified && (
+                              <span className="text-[8px] bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded border border-red-500/20 font-bold uppercase">Unverified</span>
+                            )}
+                          </p>
                           <p className="text-[10px] text-muted-foreground opacity-60">{request.studentId}</p>
                         </div>
                       </div>
