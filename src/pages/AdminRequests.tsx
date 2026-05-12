@@ -70,7 +70,20 @@ export const AdminRequests: React.FC = () => {
     }
   };
 
-  const filteredRequests = requests.filter(req => {
+  const filteredRequests = requests.filter((req, index, self) => {
+    // 1. Hide rejected requests
+    if (req.status === 'rejected') return false;
+
+    // 2. Remove duplicates (Only keep the first instance of student + book combination)
+    const isDuplicate = self.findIndex(r => 
+      r.studentUid === req.studentUid && 
+      r.bookId === req.bookId && 
+      r.status === req.status
+    ) !== index;
+    
+    if (isDuplicate) return false;
+
+    // 3. Semester filter
     const matchesSemFilter = selectedSem === 'All' || 
                             req.studentSemester === selectedSem ||
                             (selectedSem !== 'All' && req.studentSemester?.startsWith(selectedSem.charAt(0)));
@@ -127,11 +140,8 @@ export const AdminRequests: React.FC = () => {
                           {request.studentName?.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-semibold text-foreground flex items-center gap-2">
+                          <p className="font-semibold text-foreground">
                             {request.studentName}
-                            {!request.isVerified && (
-                              <span className="text-[8px] bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded border border-red-500/20 font-bold uppercase">Unverified</span>
-                            )}
                           </p>
                           <p className="text-[10px] text-muted-foreground opacity-60">{request.studentId}</p>
                         </div>
