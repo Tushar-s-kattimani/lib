@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
@@ -33,7 +32,7 @@ function App() {
           <Route path="/admin-register" element={<AdminRegister />} />
           
           <Route path="/student/*" element={
-            <ProtectedRoute role="student">
+            <ProtectedRoute allowedRoles={['student']}>
               <Routes>
                 <Route path="dashboard" element={<StudentDashboard />} />
                 <Route path="books" element={<StudentBooks />} />
@@ -46,7 +45,7 @@ function App() {
           } />
 
           <Route path="/admin/*" element={
-            <ProtectedRoute role="admin">
+            <ProtectedRoute allowedRoles={['admin']}>
               <Routes>
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="books" element={<AdminBooks />} />
