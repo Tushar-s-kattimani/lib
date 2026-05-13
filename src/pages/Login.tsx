@@ -29,6 +29,12 @@ export const Login: React.FC = () => {
       return;
     }
 
+=======
+    if (role === 'student') {
+      localStorage.removeItem('adminBypass');
+    }
+
+>>>>>>> b3946376a1afa3b22d1e39fb8768d174049160e3
     setLoading(true);
 
     try {
@@ -62,6 +68,7 @@ export const Login: React.FC = () => {
 
       <div className="w-full max-w-md relative z-10 animate-fade-in">
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-3xl shadow-2xl">
+<<<<<<< HEAD
           <div className="flex justify-center mb-8">
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-primary to-indigo-500 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>

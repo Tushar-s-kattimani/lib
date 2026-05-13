@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { Layout } from '../components/Layout';
-import { BookMarked, Trash2, Clock, BookOpen, XCircle } from 'lucide-react';
+import { Trash2, Clock, BookOpen, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const AdminRejectedRequests: React.FC = () => {

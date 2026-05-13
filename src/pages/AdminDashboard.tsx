@@ -18,16 +18,6 @@ export const AdminDashboard: React.FC = () => {
         let pendingRequests = 0;
         let activeBorrows = 0;
         let totalAvailableBooks = 0;
-
-        borrowSnap.forEach((doc) => {
-          const data = doc.data();
-          if (data.status === 'pending') pendingRequests++;
-          if (data.status === 'approved' || data.status === 'issued') activeBorrows++;
-        });
-
-        booksSnap.forEach((doc) => {
-          const data = doc.data();
-          totalAvailableBooks += (data.available || 0);
         });
 
         setStats({

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { User, Mail, Lock, Phone, MapPin, Hash, ArrowRight, BookOpen, UserCog, GraduationCap, Calendar, Navigation } from 'lucide-react';
+import { User, Mail, Lock, Phone, MapPin, Hash, ArrowRight, Calendar, Navigation } from 'lucide-react';
 import { auth, db } from '../firebase/config';
 import toast from 'react-hot-toast';
 
@@ -55,6 +55,7 @@ export const Register: React.FC = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+<<<<<<< HEAD
     
     // Indian Phone Number Validation
     const phoneRegex = /^[6-9]\d{9}$/;
@@ -62,6 +63,8 @@ export const Register: React.FC = () => {
       return toast.error("Please enter a valid 10-digit Indian phone number starting with 6, 7, 8, or 9.");
     }
 
+=======
+>>>>>>> b3946376a1afa3b22d1e39fb8768d174049160e3
     if (formData.password !== formData.confirmPassword) {
       return toast.error("Passwords don't match!");
     }

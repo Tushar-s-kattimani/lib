@@ -13,12 +13,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+=======
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+
+>>>>>>> b3946376a1afa3b22d1e39fb8768d174049160e3
   const handleLogout = () => {
     localStorage.removeItem('adminBypass');
     auth.signOut();
     window.location.href = '/login';
   };
 
+<<<<<<< HEAD
   const navItems = userData?.role === 'admin' ? [
     { label: 'Dashboard', icon: Home, path: '/admin' },
     { label: 'Manage Books', icon: BookOpen, path: '/admin/books' },
@@ -26,27 +31,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     { label: 'Students', icon: User, path: '/admin/students' },
     { label: 'Borrow Requests', icon: BookMarked, path: '/admin/requests' },
     { label: 'Rejected Requests', icon: XCircle, path: '/admin/rejected-requests' },
-    { label: 'Notifications', icon: Bell, path: '/admin/notifications' },
-  ] : [
-    { label: 'Dashboard', icon: Home, path: '/student' },
-    { label: 'Browse Books', icon: Search, path: '/student/books' },
-    { label: 'My Borrowings', icon: BookMarked, path: '/student/borrowings' },
-    { label: 'Notifications', icon: Bell, path: '/student/notifications' },
-    { label: 'Profile', icon: User, path: '/student/profile' },
-  ];
-
-  return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row">
-      {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-card border-b md:border-b-0 md:border-r border-border p-4 flex flex-col shrink-0">
-        <div className="flex items-center gap-3 mb-8 px-2">
-          <div className="p-2 bg-primary/10 rounded-lg text-primary">
-            <BookOpen className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="font-bold text-foreground">LMS Portal</h1>
-            <p className="text-xs text-muted-foreground capitalize">{userData?.role} Panel</p>
-          </div>
         </div>
 
         <nav className="flex-1 space-y-2">
