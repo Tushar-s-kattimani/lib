@@ -55,16 +55,12 @@ export const Register: React.FC = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-<<<<<<< HEAD
-    
     // Indian Phone Number Validation
     const phoneRegex = /^[6-9]\d{9}$/;
     if (!phoneRegex.test(formData.phone)) {
       return toast.error("Please enter a valid 10-digit Indian phone number starting with 6, 7, 8, or 9.");
     }
 
-=======
->>>>>>> b3946376a1afa3b22d1e39fb8768d174049160e3
     if (formData.password !== formData.confirmPassword) {
       return toast.error("Passwords don't match!");
     }

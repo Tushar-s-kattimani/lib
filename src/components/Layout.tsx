@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { auth } from '../firebase/config';
-import { LogOut, BookOpen, Bell, Search, User, Home, BookMarked, Send, XCircle } from 'lucide-react';
+import { LogOut, BookOpen, Bell, User, Home, BookMarked, Send, XCircle } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,24 +13,40 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-=======
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-
->>>>>>> b3946376a1afa3b22d1e39fb8768d174049160e3
   const handleLogout = () => {
     localStorage.removeItem('adminBypass');
     auth.signOut();
     window.location.href = '/login';
   };
 
-<<<<<<< HEAD
   const navItems = userData?.role === 'admin' ? [
-    { label: 'Dashboard', icon: Home, path: '/admin' },
+    { label: 'Dashboard', icon: Home, path: '/admin/dashboard' },
     { label: 'Manage Books', icon: BookOpen, path: '/admin/books' },
     { label: 'Issue Book', icon: Send, path: '/admin/issue-book' },
     { label: 'Students', icon: User, path: '/admin/students' },
     { label: 'Borrow Requests', icon: BookMarked, path: '/admin/requests' },
     { label: 'Rejected Requests', icon: XCircle, path: '/admin/rejected-requests' },
+    { label: 'Notifications', icon: Bell, path: '/admin/notifications' },
+  ] : [
+    { label: 'Dashboard', icon: Home, path: '/student/dashboard' },
+    { label: 'Browse Books', icon: BookOpen, path: '/student/books' },
+    { label: 'My Borrowings', icon: BookMarked, path: '/student/borrowings' },
+    { label: 'My Profile', icon: User, path: '/student/profile' },
+    { label: 'Notifications', icon: Bell, path: '/student/notifications' },
+  ];
+
+  return (
+    <div className="flex h-screen bg-background overflow-hidden">
+      {/* Sidebar */}
+      <aside className="w-64 bg-card border-r border-border flex flex-col p-6 shrink-0 hidden lg:flex">
+        <div className="flex items-center gap-3 mb-10 px-2">
+          <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+            <BookOpen className="w-6 h-6 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="font-black text-xl tracking-tight text-foreground leading-none">LIBRARY</h1>
+            <p className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase mt-1 opacity-50">Management</p>
+          </div>
         </div>
 
         <nav className="flex-1 space-y-2">
@@ -82,7 +98,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 {userData?.name?.charAt(0) || userData?.email?.charAt(0) || 'U'}
               </div>
               <div className="hidden sm:block text-sm">
-                <p className="font-medium text-foreground">{userData?.name || 'Admin User'}</p>
+                <p className="font-medium text-foreground">{userData?.name || 'User'}</p>
+                <p className="text-[10px] text-muted-foreground capitalize">{userData?.role}</p>
               </div>
             </div>
           </div>

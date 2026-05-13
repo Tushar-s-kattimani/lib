@@ -18,6 +18,16 @@ export const AdminDashboard: React.FC = () => {
         let pendingRequests = 0;
         let activeBorrows = 0;
         let totalAvailableBooks = 0;
+
+        borrowSnap.forEach((doc) => {
+          const data = doc.data();
+          if (data.status === 'pending') pendingRequests++;
+          if (data.status === 'approved' || data.status === 'issued') activeBorrows++;
+        });
+
+        booksSnap.forEach((doc) => {
+          const data = doc.data();
+          totalAvailableBooks += (data.available || 0);
         });
 
         setStats({
@@ -57,7 +67,7 @@ export const AdminDashboard: React.FC = () => {
             <BookOpen className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-muted-foreground text-sm font-medium">Total Books</p>
+            <p className="text-muted-foreground text-sm font-medium">Total Available Books</p>
             <h3 className="text-2xl font-bold text-foreground mt-1">{stats.books}</h3>
           </div>
         </div>
@@ -87,22 +97,22 @@ export const AdminDashboard: React.FC = () => {
         <div className="bg-card rounded-2xl border border-border shadow-sm p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-4">
-            <button className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
+            <button onClick={() => window.location.href='/admin/books'} className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
               <BookOpen className="w-6 h-6 text-primary mb-2" />
               <h4 className="font-medium text-foreground">Add New Book</h4>
               <p className="text-xs text-muted-foreground mt-1">Add to library catalog</p>
             </button>
-            <button className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
+            <button onClick={() => window.location.href='/admin/students'} className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
               <Users className="w-6 h-6 text-purple-500 mb-2" />
               <h4 className="font-medium text-foreground">Manage Students</h4>
               <p className="text-xs text-muted-foreground mt-1">View registered students</p>
             </button>
-            <button className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
+            <button onClick={() => window.location.href='/admin/requests'} className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
               <Clock className="w-6 h-6 text-amber-500 mb-2" />
               <h4 className="font-medium text-foreground">Review Requests</h4>
               <p className="text-xs text-muted-foreground mt-1">Approve/Reject borrows</p>
             </button>
-            <button className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
+            <button onClick={() => window.location.href='/admin/notifications'} className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
               <AlertCircle className="w-6 h-6 text-red-500 mb-2" />
               <h4 className="font-medium text-foreground">Send Notification</h4>
               <p className="text-xs text-muted-foreground mt-1">Message to students</p>
