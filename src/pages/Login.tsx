@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -13,7 +13,21 @@ export const Login: React.FC = () => {
   const [role, setRole] = useState<'student' | 'admin'>('student');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { loginAsAdmin } = useAuth();
+  const { user, userData, loginAsAdmin } = useAuth();
+
+  useEffect(() => {
+    if (user && userData) {
+      if (userData.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (userData.role === 'student') {
+        if (!user.emailVerified) {
+          navigate('/verify-email');
+        } else {
+          navigate('/student/dashboard');
+        }
+      }
+    }
+  }, [user, userData, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
