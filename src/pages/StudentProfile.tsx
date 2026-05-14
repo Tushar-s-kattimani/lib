@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Mail, Phone, Hash, Calendar, ShieldCheck, Save } from 'lucide-react';
+import { User, Mail, Phone, Hash, Calendar, ShieldCheck, Save, Camera } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { supabase } from '../supabase/config';
 import toast from 'react-hot-toast';
 
 export const StudentProfile: React.FC = () => {
@@ -12,6 +13,46 @@ export const StudentProfile: React.FC = () => {
   const [semester, setSemester] = useState(userData?.semester || '');
   const [phone, setPhone] = useState(userData?.phone || '');
   const [loading, setLoading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      return toast.error("File size should be less than 5MB");
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user.uid}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('profile-pictures')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage
+        .from('profile-pictures')
+        .getPublicUrl(filePath);
+
+      await updateDoc(doc(db, 'students', user.uid), {
+        photoURL: data.publicUrl
+      });
+      
+      toast.success("Profile photo updated successfully!");
+    } catch (error: any) {
+      toast.error("Failed to upload photo: " + error.message);
+    } finally {
+      setUploadingPhoto(false);
+      // Reset the input so the same file can be selected again if needed
+      e.target.value = '';
+    }
+  };
 
   const handleUpdateProfile = async () => {
     if (!user) return;
@@ -47,10 +88,33 @@ export const StudentProfile: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1">
           <div className="bg-card rounded-2xl border border-border shadow-sm p-8 text-center">
-            <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-background shadow-lg">
-              <span className="text-5xl font-bold text-primary">
-                {userData?.name?.charAt(0) || 'S'}
-              </span>
+            <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-background shadow-lg relative group">
+              {userData?.photoURL ? (
+                <img src={userData.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
+              ) : (
+                <span className="text-5xl font-bold text-primary">
+                  {userData?.name?.charAt(0) || 'S'}
+                </span>
+              )}
+              
+              <label className="absolute inset-0 bg-black/50 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                {uploadingPhoto ? (
+                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Camera className="w-6 h-6 text-white mb-1" />
+                    <span className="text-white text-xs font-medium">Upload</span>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      capture="user"
+                      onChange={handlePhotoUpload}
+                      disabled={uploadingPhoto}
+                      className="hidden" 
+                    />
+                  </>
+                )}
+              </label>
             </div>
             <h2 className="text-xl font-bold text-foreground">{userData?.name || 'Student Name'}</h2>
             <p className="text-muted-foreground mb-4">{userData?.email}</p>

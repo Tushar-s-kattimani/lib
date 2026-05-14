@@ -51,6 +51,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (adminDoc.exists()) {
           // It's an admin
+          setUserData({ ...adminDoc.data(), role: 'admin' });
+          setLoading(false);
+        } else {
+          // It's a student
           const studentRef = doc(db, 'students', firebaseUser.uid);
           unsubscribeSnapshot = onSnapshot(studentRef, (doc) => {
             if (doc.exists()) {
