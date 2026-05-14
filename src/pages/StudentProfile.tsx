@@ -4,8 +4,7 @@ import { User, Mail, Phone, Hash, Calendar, ShieldCheck, Save, Camera } from 'lu
 import { Layout } from '../components/Layout';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { supabase } from '../supabase/config';
-import toast from 'react-hot-toast';
+import { Widget } from '@uploadcare/react-widget';
 
 export const StudentProfile: React.FC = () => {
   const { user, userData } = useAuth();
@@ -13,48 +12,17 @@ export const StudentProfile: React.FC = () => {
   const [semester, setSemester] = useState(userData?.semester || '');
   const [phone, setPhone] = useState(userData?.phone || '');
   const [loading, setLoading] = useState(false);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
+  const handlePhotoUpload = async (fileInfo: any) => {
+    if (!user || !fileInfo) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      return toast.error("File size should be less than 5MB");
-    }
-
-    setUploadingPhoto(true);
     try {
-      // Sanitize file extension to ensure it only contains letters/numbers
-      const fileExt = (file.name.split('.').pop() || 'png').replace(/[^a-z0-9]/gi, '');
-      const filePath = `${user.uid}-${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('profile-pictures')
-        .upload(filePath, file.slice(), { // Use .slice() to create a clean Blob without the original filename metadata
-          upsert: true,
-          contentType: file.type // Manually set content type to be safe
-        });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const { data } = supabase.storage
-        .from('profile-pictures')
-        .getPublicUrl(filePath);
-
       await updateDoc(doc(db, 'students', user.uid), {
-        photoURL: data.publicUrl
+        photoURL: fileInfo.cdnUrl
       });
-      
       toast.success("Profile photo updated successfully!");
     } catch (error: any) {
-      toast.error("Failed to upload photo: " + error.message);
-    } finally {
-      setUploadingPhoto(false);
-      // Reset the input so the same file can be selected again if needed
-      e.target.value = '';
+      toast.error("Failed to save photo: " + error.message);
     }
   };
 
@@ -107,24 +75,16 @@ export const StudentProfile: React.FC = () => {
                 </span>
               )}
               
-              <label className="absolute inset-0 bg-black/50 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                {uploadingPhoto ? (
-                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <Camera className="w-6 h-6 text-white mb-1" />
-                    <span className="text-white text-xs font-medium">Upload</span>
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      capture="user"
-                      onChange={handlePhotoUpload}
-                      disabled={uploadingPhoto}
-                      className="hidden" 
-                    />
-                  </>
-                )}
-              </label>
+              <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Widget 
+                  publicKey={import.meta.env.VITE_UPLOADCARE_PUBLIC_KEY || 'demopublickey'} 
+                  onFileSelect={handlePhotoUpload}
+                  previewStep={true}
+                  clearable={true}
+                  crop="1:1"
+                  imagesOnly={true}
+                />
+              </div>
             </div>
             <h2 className="text-xl font-bold text-foreground">{userData?.name || 'Student Name'}</h2>
             <p className="text-muted-foreground mb-4">{userData?.email}</p>
