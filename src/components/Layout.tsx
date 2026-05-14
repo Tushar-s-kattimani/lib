@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { auth } from '../firebase/config';
 import { LogOut, BookOpen, Bell, User, Home, BookMarked, Send, XCircle, Menu, X } from 'lucide-react';
+import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/config';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,6 +15,50 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  React.useEffect(() => {
+    const q = query(
+      collection(db, 'notifications'),
+      orderBy('createdAt', 'desc'),
+      limit(20)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const lastSeen = localStorage.getItem(`lastSeenNotif_${userData?.uid}`);
+      const docs = snapshot.docs;
+      
+      if (lastSeen) {
+        const count = docs.filter(doc => doc.id !== lastSeen && doc.data().createdAt?.toDate() > new Date(parseInt(lastSeen))).length;
+        setUnreadCount(count);
+      } else {
+        setUnreadCount(docs.length);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [userData?.uid]);
+
+  // Clear count when visiting notifications page
+  React.useEffect(() => {
+    if (location.pathname.includes('notifications')) {
+      const latestNotifId = localStorage.getItem(`latestNotif_${userData?.uid}`);
+      if (latestNotifId) {
+        localStorage.setItem(`lastSeenNotif_${userData?.uid}`, Date.now().toString());
+        setUnreadCount(0);
+      }
+    }
+  }, [location.pathname, userData?.uid]);
+
+  React.useEffect(() => {
+    const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'), limit(1));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        localStorage.setItem(`latestNotif_${userData?.uid}`, snapshot.docs[0].id);
+      }
+    });
+    return () => unsubscribe();
+  }, [userData?.uid]);
 
   const handleLogout = () => {
     localStorage.removeItem('adminBypass');
@@ -122,9 +168,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
           
           <div className="flex items-center gap-2 sm:gap-4">
-            <button className="p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-secondary transition-colors relative">
+            <button 
+              onClick={() => navigate(userData?.role === 'admin' ? '/admin/notifications' : '/student/notifications')}
+              className="p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-secondary transition-colors relative"
+            >
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-card"></span>
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-card">
+                  {unreadCount}
+                </span>
+              )}
             </button>
             <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-border">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">

@@ -18,14 +18,11 @@ export const Login: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (role === 'admin') {
-      if (email === 'klelibrary@admin.com' && password === 'kle@151571') {
-        loginAsAdmin();
-        toast.success('Welcome back, Admin!');
-        navigate('/admin');
-      } else {
-        toast.error('Invalid Admin Credentials. Please use the authorized admin email and password.');
-      }
+    // Hardcoded Admin Bypass
+    if (role === 'admin' && email === 'klelibrary@admin.com' && password === 'kle@151571') {
+      loginAsAdmin();
+      toast.success('Welcome back, System Admin!');
+      navigate('/admin');
       return;
     }
 
@@ -35,17 +32,28 @@ export const Login: React.FC = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      const studentDoc = await getDoc(doc(db, 'students', user.uid));
-      if (studentDoc.exists()) {
-        if (!user.emailVerified) {
-          navigate('/verify-email');
+      if (role === 'admin') {
+        const adminDoc = await getDoc(doc(db, 'admins', user.uid));
+        if (adminDoc.exists()) {
+          toast.success('Welcome back, Admin!');
+          navigate('/admin');
         } else {
-          toast.success('Login successful!');
-          navigate('/student');
+          await auth.signOut();
+          toast.error('This account is not registered as a librarian.');
         }
       } else {
-        auth.signOut();
-        toast.error('Invalid student credentials.');
+        const studentDoc = await getDoc(doc(db, 'students', user.uid));
+        if (studentDoc.exists()) {
+          if (!user.emailVerified) {
+            navigate('/verify-email');
+          } else {
+            toast.success('Login successful!');
+            navigate('/student');
+          }
+        } else {
+          await auth.signOut();
+          toast.error('Invalid student credentials.');
+        }
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to login');

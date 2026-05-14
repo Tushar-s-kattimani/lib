@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
+import { useNavigate } from 'react-router-dom';
 import { Users, BookOpen, Clock, AlertCircle } from 'lucide-react';
 import { Layout } from '../components/Layout';
 
 export const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState({ students: 0, books: 0, pendingRequests: 0, activeBorrows: 0 });
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -97,22 +99,22 @@ export const AdminDashboard: React.FC = () => {
         <div className="bg-card rounded-2xl border border-border shadow-sm p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-4">
-            <button onClick={() => window.location.href='/admin/books'} className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
+            <button onClick={() => navigate('/admin/books')} className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
               <BookOpen className="w-6 h-6 text-primary mb-2" />
               <h4 className="font-medium text-foreground">Add New Book</h4>
               <p className="text-xs text-muted-foreground mt-1">Add to library catalog</p>
             </button>
-            <button onClick={() => window.location.href='/admin/students'} className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
+            <button onClick={() => navigate('/admin/students')} className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
               <Users className="w-6 h-6 text-purple-500 mb-2" />
               <h4 className="font-medium text-foreground">Manage Students</h4>
               <p className="text-xs text-muted-foreground mt-1">View registered students</p>
             </button>
-            <button onClick={() => window.location.href='/admin/requests'} className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
+            <button onClick={() => navigate('/admin/requests')} className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
               <Clock className="w-6 h-6 text-amber-500 mb-2" />
               <h4 className="font-medium text-foreground">Review Requests</h4>
               <p className="text-xs text-muted-foreground mt-1">Approve/Reject borrows</p>
             </button>
-            <button onClick={() => window.location.href='/admin/notifications'} className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
+            <button onClick={() => navigate('/admin/notifications')} className="p-4 border border-border rounded-xl hover:bg-secondary transition-colors text-left">
               <AlertCircle className="w-6 h-6 text-red-500 mb-2" />
               <h4 className="font-medium text-foreground">Send Notification</h4>
               <p className="text-xs text-muted-foreground mt-1">Message to students</p>
