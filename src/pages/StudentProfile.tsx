@@ -87,6 +87,12 @@ export const StudentProfile: React.FC = () => {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-foreground">My Profile</h1>
         <p className="text-muted-foreground mt-1">Manage your personal information and settings.</p>
+        
+        {supabase.storage.from('test').getPublicUrl('test').data.publicUrl.includes('missing-url') && (
+          <div className="mt-4 p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-500 text-sm font-medium animate-pulse">
+            ⚠️ SYSTEM ALERT: Vercel is missing your Supabase Keys! Photo upload will not work until you fix the Environment Variables in the Vercel Dashboard.
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
