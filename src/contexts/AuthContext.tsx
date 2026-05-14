@@ -45,36 +45,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (firebaseUser) {
-        try {
-          // Try admin first
-          const adminRef = doc(db, 'admins', firebaseUser.uid);
-          const adminDoc = await getDoc(adminRef);
-          
-          if (adminDoc.exists()) {
-            // It's an admin
-            setUserData({ ...adminDoc.data(), role: 'admin' });
+        // Try admin first
+        const adminRef = doc(db, 'admins', firebaseUser.uid);
+        const adminDoc = await getDoc(adminRef);
+        
+        if (adminDoc.exists()) {
+          // It's an admin
+          setUserData({ ...adminDoc.data(), role: 'admin' });
+          setLoading(false);
+        } else {
+          // It's a student
+          const studentRef = doc(db, 'students', firebaseUser.uid);
+          unsubscribeSnapshot = onSnapshot(studentRef, (doc) => {
+            if (doc.exists()) {
+              setUserData(doc.data());
+            } else {
+              setUserData(null);
+            }
             setLoading(false);
-            return;
-          }
-        } catch (error) {
-          console.log("Admin check failed or denied, proceeding as student.", error);
+          });
         }
-
-        // It's a student (or admin check failed)
-        const studentRef = doc(db, 'students', firebaseUser.uid);
-        unsubscribeSnapshot = onSnapshot(studentRef, (doc) => {
-          if (doc.exists()) {
-            const data = doc.data();
-            setUserData({ ...data, role: data.role || 'student' });
-          } else {
-            setUserData(null);
-          }
-          setLoading(false);
-        }, (error) => {
-          console.error("Error fetching student data:", error);
-          setUserData(null);
-          setLoading(false);
-        });
       } else {
         setUserData(null);
         setLoading(false);

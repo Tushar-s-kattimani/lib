@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Mail, Phone, Hash, Calendar, ShieldCheck, Save, Camera } from 'lucide-react';
+import { User, Mail, Phone, Hash, Calendar, ShieldCheck, Save } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { Widget } from '@uploadcare/react-widget';
+import toast from 'react-hot-toast';
 
 export const StudentProfile: React.FC = () => {
   const { user, userData } = useAuth();
@@ -12,19 +12,6 @@ export const StudentProfile: React.FC = () => {
   const [semester, setSemester] = useState(userData?.semester || '');
   const [phone, setPhone] = useState(userData?.phone || '');
   const [loading, setLoading] = useState(false);
-
-  const handlePhotoUpload = async (fileInfo: any) => {
-    if (!user || !fileInfo) return;
-
-    try {
-      await updateDoc(doc(db, 'students', user.uid), {
-        photoURL: fileInfo.cdnUrl
-      });
-      toast.success("Profile photo updated successfully!");
-    } catch (error: any) {
-      toast.error("Failed to save photo: " + error.message);
-    }
-  };
 
   const handleUpdateProfile = async () => {
     if (!user) return;
@@ -55,36 +42,15 @@ export const StudentProfile: React.FC = () => {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-foreground">My Profile</h1>
         <p className="text-muted-foreground mt-1">Manage your personal information and settings.</p>
-        
-        {supabase.storage.from('test').getPublicUrl('test').data.publicUrl.includes('missing-url') && (
-          <div className="mt-4 p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-500 text-sm font-medium animate-pulse">
-            ⚠️ SYSTEM ALERT: Vercel is missing your Supabase Keys! Photo upload will not work until you fix the Environment Variables in the Vercel Dashboard.
-          </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1">
           <div className="bg-card rounded-2xl border border-border shadow-sm p-8 text-center">
-            <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-background shadow-lg relative group">
-              {userData?.photoURL ? (
-                <img src={userData.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
-              ) : (
-                <span className="text-5xl font-bold text-primary">
-                  {userData?.name?.charAt(0) || 'S'}
-                </span>
-              )}
-              
-              <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Widget 
-                  publicKey={import.meta.env.VITE_UPLOADCARE_PUBLIC_KEY || 'demopublickey'} 
-                  onFileSelect={handlePhotoUpload}
-                  previewStep={true}
-                  clearable={true}
-                  crop="1:1"
-                  imagesOnly={true}
-                />
-              </div>
+            <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-background shadow-lg">
+              <span className="text-5xl font-bold text-primary">
+                {userData?.name?.charAt(0) || 'S'}
+              </span>
             </div>
             <h2 className="text-xl font-bold text-foreground">{userData?.name || 'Student Name'}</h2>
             <p className="text-muted-foreground mb-4">{userData?.email}</p>
