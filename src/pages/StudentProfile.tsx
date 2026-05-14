@@ -25,12 +25,16 @@ export const StudentProfile: React.FC = () => {
 
     setUploadingPhoto(true);
     try {
-      const fileExt = file.name.split('.').pop();
+      // Sanitize file extension to ensure it only contains letters/numbers
+      const fileExt = (file.name.split('.').pop() || 'png').replace(/[^a-z0-9]/gi, '');
       const filePath = `${user.uid}-${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('profile-pictures')
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, file.slice(), { // Use .slice() to create a clean Blob without the original filename metadata
+          upsert: true,
+          contentType: file.type // Manually set content type to be safe
+        });
 
       if (uploadError) {
         throw uploadError;
